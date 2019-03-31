@@ -1,3 +1,3 @@
 # He
 
-Extract passages from screen clippings and post them.
+Extract passages from screen clippings and share them.
