@@ -1,3 +1,9 @@
+<form method="POST" enctype="multipart/form-data">
+    <input type="hidden" name="MAX_FILE_SIZE" value="1000000" />
+    <input type="file" name="pictures" accept="image/*" />
+    <input type="submit" value="upload" />
+</form>
+
 <?php
 
 require_once '../he/vendor/autoload.php';
@@ -18,7 +24,7 @@ $url = $request->getUrl();
 
 $headers = array(
     // Request headers
-    'Content-Type' => 'application/json',
+    'Content-Type' => 'application/octet-stream',
     'Ocp-Apim-Subscription-Key' => $ocpApimSubscriptionKey
 );
 $request->setHeader($headers);
@@ -30,20 +36,13 @@ $parameters = array(
 );
 $url->setQueryVariables($parameters);
 
-// Request body parameters
-$imageUrl = 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/af/' .
-    'Atomist_quote_from_Democritus.png/338px-Atomist_quote_from_Democritus.png';
-$body = json_encode(array('url' => $imageUrl));
-
 // Request body
-$request->setBody($body);
+$data = file_get_contents($_FILES['pictures']['tmp_name']);
+$request->setBody($data);
 
-try
-{
+try {
     $response = $request->send();
     echo "<pre>" . json_encode(json_decode($response->getBody()), JSON_PRETTY_PRINT) . "</pre>";
-}
-catch (HttpException $ex)
-{
+} catch (HttpException $ex) {
     echo "<pre>" . $ex . "</pre>";
 }
