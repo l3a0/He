@@ -1,0 +1,15 @@
+version: "3"
+
+services:
+  webserver:
+    build: 
+      context: ./.docker/webserver
+    container_name: 'webserver'
+    restart: 'always'
+    ports:
+      - "80:80"
+    volumes: 
+      - ./www:/var/www/html
+      - ./config/php/php.ini:/usr/local/etc/php/php.ini
+      - ./config/vhosts:/etc/apache2/sites-enabled
+      - ./logs/apache2:/var/log/apache2
