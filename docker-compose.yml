@@ -9,6 +9,7 @@ services:
     ports:
       - "80:80"
     volumes: 
+      - ./:/var/www/he
       - ./www:/var/www/html
       - ./config/php/php.ini:/usr/local/etc/php/php.ini
       - ./config/vhosts:/etc/apache2/sites-enabled

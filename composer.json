@@ -1,0 +1,7 @@
+{
+    "name": "baowebdev/he",
+    "description": "Extract passages from screen clippings and share them.",
+    "require": {
+        "pear/http_request2": "2.3.*"
+    }
+}
