@@ -9,40 +9,92 @@
 require_once '../he/vendor/autoload.php';
 require_once 'HTTP/Request2.php';
 
-// Replace <Subscription Key> with a valid subscription key.
-$ocpApimSubscriptionKey = '<insert api key here>';
+if ($_FILES['pictures']['tmp_name']) {
+    $request = buildRequest();
 
-// You must use the same location in your REST call as you used to obtain
-// your subscription keys. For example, if you obtained your subscription keys
-// from westus, replace "westcentralus" in the URL below with "westus".
-$uriBase = 'https://westus2.api.cognitive.microsoft.com/vision/v2.0/';
+    try {
+        $response = $request->send();
+        $responseBody = json_decode($response->getBody());
 
-$request = new Http_Request2($uriBase . 'ocr');
-$request->setMethod(HTTP_Request2::METHOD_POST);
+        echo '<table>';
+        echo '<tr>';
 
-$url = $request->getUrl();
+        echo '<td valign="top" width="25%">';
+        printText($responseBody);
+        echo '</td>';
 
-$headers = array(
-    // Request headers
-    'Content-Type' => 'application/octet-stream',
-    'Ocp-Apim-Subscription-Key' => $ocpApimSubscriptionKey
-);
-$request->setHeader($headers);
+        echo '<td>';
+        printImage();
+        echo '</td>';
 
-$parameters = array(
-    // Request parameters
-    'language' => 'unk',
-    'detectOrientation' => 'true'
-);
-$url->setQueryVariables($parameters);
+        echo '</tr>';
+        echo '</table>';
 
-// Request body
-$data = file_get_contents($_FILES['pictures']['tmp_name']);
-$request->setBody($data);
+        printResponse($responseBody);
+    } catch (HttpException $error) {
+        printError($error);
+    }
+}
 
-try {
-    $response = $request->send();
-    echo "<pre>" . json_encode(json_decode($response->getBody()), JSON_PRETTY_PRINT) . "</pre>";
-} catch (HttpException $ex) {
-    echo "<pre>" . $ex . "</pre>";
+function buildRequest()
+{
+    // Replace <Subscription Key> with a valid subscription key.
+    $ocpApimSubscriptionKey = '<Subscription Key>';
+
+    // You must use the same location in your REST call as you used to obtain
+    // your subscription keys. For example, if you obtained your subscription keys
+    // from westus, replace "westcentralus" in the URL below with "westus".
+    $uriBase = 'https://westus2.api.cognitive.microsoft.com/vision/v2.0/';
+
+    $request = new Http_Request2($uriBase . 'ocr');
+    $request->setMethod(HTTP_Request2::METHOD_POST);
+
+    $url = $request->getUrl();
+
+    $headers = array(
+        // Request headers
+        'Content-Type' => 'application/octet-stream',
+        'Ocp-Apim-Subscription-Key' => $ocpApimSubscriptionKey
+    );
+    $request->setHeader($headers);
+
+    $parameters = array(
+        // Request parameters
+        'language' => 'unk',
+        'detectOrientation' => 'true'
+    );
+    $url->setQueryVariables($parameters);
+
+    // Request body
+    $data = file_get_contents($_FILES['pictures']['tmp_name']);
+    $request->setBody($data);
+
+    return $request;
+}
+
+function printText($responseBody)
+{
+    echo '<p>';
+    foreach ($responseBody->regions[0]->lines as $line) {
+        foreach ($line->words as $word) {
+            echo $word->text . ' ';
+        }
+    }
+    echo '</p>';
+}
+
+function printResponse($responseBody)
+{
+    echo "<pre>" . json_encode($responseBody, JSON_PRETTY_PRINT) . "</pre>";
+}
+
+function printError($error)
+{
+    echo "<pre>" . $error . "</pre>";
+}
+
+function printImage()
+{ 
+    $data = file_get_contents($_FILES['pictures']['tmp_name']);
+    echo '<img src="data:image/jpeg;base64,' . base64_encode( $data ).'" />';
 }
